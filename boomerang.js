@@ -53,6 +53,16 @@
  */
 
 /**
+ * @function
+ * @global
+ * @desc
+ * Checks if we are working with IE version 8 and lower.
+ */
+function isIe8OrLower(){
+	return !document.getElementsByClassName;
+}
+
+/**
  * @global
  * @type {TimeStamp}
  * @desc
@@ -63,7 +73,15 @@
  * time.  We also declare it without `var` so that we can later
  * `delete` it.  This is the only way that works on Internet Explorer.
  */
-BOOMR_start = new Date().getTime();
+if (isIe8OrLower()) {
+	BOOMR_start = new Date().getTime();
+}
+else if (typeof window !== "undefined") {
+	window.BOOMR_start = new Date().getTime();
+}
+else {
+	throw new Error("No window to work with.");
+}
 
 /**
  * @function
@@ -3384,6 +3402,22 @@ BOOMR_check_doc_domain();
 		},
 
 		/**
+		 * Makes sure the URL is ready for adding a query string.
+		 * Either "?" or "&" is added at the end.
+		 *
+		 * @param {string} url Url to be prepared
+		 *
+		 * @returns {string} Url with "?" or "&" at the end.
+		 */
+		prepareBeaconUrlForQueryString: function(url){
+			if (url){
+				return url + ((url.indexOf("?") > -1) ? "&" : "?");
+			}
+
+			return url;
+		},
+
+		/**
 		 * Sends beacon data via the Beacon API, XHR or Image
 		 *
 		 * @param {object} data Data
@@ -3430,9 +3464,16 @@ BOOMR_check_doc_domain();
 				impl.beacon_url = "https:" + impl.beacon_url;
 			}
 
+			var beaconUrl = impl.beacon_url;
+			var applicationId = data.application_id;
+
+			if (applicationId){
+				beaconUrl = prepareBeaconUrlForQueryString(beaconUrl) + applicationId;
+			}
+
 			// if there are already url parameters in the beacon url,
 			// change the first parameter prefix for the boomerang url parameters to &
-			url = impl.beacon_url + ((impl.beacon_url.indexOf("?") > -1) ? "&" : "?") + paramsJoined;
+			url = prepareBeaconUrlForQueryString(beaconUrl) + paramsJoined;
 
 			//
 			// Try to send an IMG beacon if possible (which is the most compatible),
@@ -3470,7 +3511,7 @@ BOOMR_check_doc_domain();
 					type: "application/x-www-form-urlencoded"
 				});
 
-				if (w.navigator.sendBeacon(impl.beacon_url, blobData)) {
+				if (w.navigator.sendBeacon(beaconUrl, blobData)) {
 					return true;
 				}
 
@@ -3669,9 +3710,21 @@ BOOMR_check_doc_domain();
 
 	boomr.url = boomr.utils.getMyURL();
 
-
-
-	delete BOOMR_start;
+	if (isIe8OrLower()) {
+		// This still doesn't work in modern browsers in strict mode,
+		BOOMR_start = null;
+		// but now it is very obvious why. When it's finally time to
+		// retire older IE versions or when working with forked versions
+		// of this code, it is prepared for painless refactoring.
+		// Just drop this "if" and retain the body of the "else".
+		delete BOOMR_start;
+	}
+	else if (typeof window !== "undefined") {
+		delete window.BOOMR_start;
+	}
+	else {
+		// no window - no BOOMR_start
+	}
 
 	/**
 	 * @global
@@ -3690,7 +3743,21 @@ BOOMR_check_doc_domain();
 		 * @memberof BOOMR
 		 */
 		boomr.t_lstart = BOOMR_lstart;
-		delete BOOMR_lstart;
+
+		if (isIe8OrLower()) {
+			// This still doesn't work in modern browsers in strict mode,
+			// but now it is very obvious why. When it's finally time to
+			// retire older IE versions or when working with forked versions
+			// of this code, it is prepared for painless refactoring.
+			// Just drop this "if" and retain the body of the "else".
+			delete BOOMR_lstart;
+		}
+		else if (typeof window !== "undefined") {
+			delete window.BOOMR_lstart;
+		}
+		else {
+			// no window - no BOOMR_lstart
+		}
 	}
 	else if (typeof BOOMR.window.BOOMR_lstart === "number") {
 		boomr.t_lstart = BOOMR.window.BOOMR_lstart;
