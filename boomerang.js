@@ -3468,12 +3468,12 @@ BOOMR_check_doc_domain();
 			var applicationId = data.application_id;
 
 			if (applicationId){
-				beaconUrl = prepareBeaconUrlForQueryString(beaconUrl) + applicationId;
+				beaconUrl = this.prepareBeaconUrlForQueryString(beaconUrl) + applicationId;
 			}
 
 			// if there are already url parameters in the beacon url,
 			// change the first parameter prefix for the boomerang url parameters to &
-			url = prepareBeaconUrlForQueryString(beaconUrl) + paramsJoined;
+			url = this.prepareBeaconUrlForQueryString(beaconUrl) + paramsJoined;
 
 			//
 			// Try to send an IMG beacon if possible (which is the most compatible),

@@ -2,11 +2,11 @@
   "plugins": [
     "plugins/continuity.js",
     "plugins/iframe-delay.js",
+    "plugins/rt.js",
     "plugins/auto-xhr.js",
     "plugins/spa.js",
     "plugins/history.js",
     "plugins/clicks.js",
-    "plugins/rt.js",
     "plugins/painttiming.js",
     "plugins/navtiming.js",
     "plugins/restiming.js",
